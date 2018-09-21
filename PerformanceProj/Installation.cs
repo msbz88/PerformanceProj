@@ -14,24 +14,27 @@ using TestStack.White.WindowsAPI;
 
 namespace PerformanceProj {
     public class Installation {
-        public string Name { get; set; }
+        public string PortalName { get; set; }
         string DirectoryPath { get; set; }
 
         public Installation(string name, string directoryPath) {
-            Name = name;
+            PortalName = name;
             DirectoryPath = directoryPath;
         }
 
         public void StartOrAttach() {
+            RunTime.StartWatch();
             var applicationPath = Path.Combine(DirectoryPath, "scd.exe");
             Application.AttachOrLaunch(new System.Diagnostics.ProcessStartInfo(applicationPath));
+            RunTime.PrintStopwatchResult("SCD start/resume");
         }
 
         public void TryLogon(string titleLogon, string username, string password) {
-            if (!WindowSCD.IsWindowLaunched(Name)) {
+            if (!WindowSCD.IsWindowLaunched(PortalName)) {
+                RunTime.StartWatch();
                 WindowSCD.WaitWindow(titleLogon);
                 Window windowLogon = WindowSCD.GetWindow(titleLogon);
-                windowLogon.Focus();
+                windowLogon.Focus(DisplayState.Restored);
                 TextBox textBoxUsername = windowLogon.Get<TextBox>(SearchCriteria.ByControlType(ControlType.Edit).AndIndex(1));
                 textBoxUsername.Text = username;
                 TextBox textBoxPassword = windowLogon.Get<TextBox>(SearchCriteria.ByControlType(ControlType.Edit).AndIndex(2));
@@ -41,18 +44,21 @@ namespace PerformanceProj {
                 } catch (Exception) {
                     Console.WriteLine(titleLogon + " window closed");
                 }
-                WindowSCD.WaitWindow(Name);
+                RunTime.PrintStopwatchResult("Logon");
+                WindowSCD.WaitWindow(PortalName);
             }
         }
 
         public Window PortalSearch(string text) {
             if (!WindowSCD.IsWindowLaunched(text)) {
-                Window windowPortal = WindowSCD.GetWindow(Name);
+                Window windowPortal = WindowSCD.GetWindow(PortalName);
                 windowPortal.Focus(DisplayState.Restored);
                 TextBox textBoxPortalSearch = windowPortal.Get<TextBox>(SearchCriteria.ByAutomationId("SearchTextBox"));
                 textBoxPortalSearch.Text = text;
-                Keyboard.Instance.PressSpecialKey(KeyboardInput.SpecialKeys.RETURN);
-                WindowSCD.WaitWindow(text);               
+                Keyboard.Instance.PressSpecialKey(KeyboardInput.SpecialKeys.RETURN);              
+                RunTime.StartWatch();
+                WindowSCD.WaitWindow(text);
+                RunTime.PrintStopwatchResult("Window load");
             }
             return WindowSCD.GetWindow(text);
         }
