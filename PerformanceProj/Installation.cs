@@ -23,15 +23,12 @@ namespace PerformanceProj {
         }
 
         public void StartOrAttach() {
-            RunTime.StartWatch();
             var applicationPath = Path.Combine(DirectoryPath, "scd.exe");
             Application.AttachOrLaunch(new System.Diagnostics.ProcessStartInfo(applicationPath));
-            RunTime.PrintStopwatchResult("SCD start/resume");
         }
 
         public void TryLogon(string titleLogon, string username, string password) {
             if (!WindowSCD.IsWindowLaunched(PortalName)) {
-                RunTime.StartWatch();
                 WindowSCD.WaitWindow(titleLogon);
                 Window windowLogon = WindowSCD.GetWindow(titleLogon);
                 windowLogon.Focus(DisplayState.Restored);
@@ -42,23 +39,21 @@ namespace PerformanceProj {
                 try {
                     WindowSCD.ClickButton(windowLogon, SearchCriteria.ByText("OK"));
                 } catch (Exception) {
-                    Console.WriteLine(titleLogon + " window closed");
+                    //Console.WriteLine(titleLogon + " window closed");
                 }
-                RunTime.PrintStopwatchResult("Logon");
                 WindowSCD.WaitWindow(PortalName);
             }
         }
 
         public Window PortalSearch(string text) {
-            if (!WindowSCD.IsWindowLaunched(text)) {
+            WindowSCD.WaitWindow(text);
+            if (WindowSCD.IsWindowLaunched(text)) {
                 Window windowPortal = WindowSCD.GetWindow(PortalName);
                 windowPortal.Focus(DisplayState.Restored);
                 TextBox textBoxPortalSearch = windowPortal.Get<TextBox>(SearchCriteria.ByAutomationId("SearchTextBox"));
                 textBoxPortalSearch.Text = text;
                 Keyboard.Instance.PressSpecialKey(KeyboardInput.SpecialKeys.RETURN);              
-                RunTime.StartWatch();
                 WindowSCD.WaitWindow(text);
-                RunTime.PrintStopwatchResult("Window load");
             }
             return WindowSCD.GetWindow(text);
         }

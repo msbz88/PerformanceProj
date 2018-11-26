@@ -1,35 +1,33 @@
-﻿using System;
+﻿using Castle.Core.Logging;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using TestStack.White;
-using TestStack.White.Factory;
-using TestStack.White.UIItems.WindowItems;
-using TestStack.White.UIItems.Finders;
-using TestStack.White.UIItems;
 using System.Threading;
-using TestStack.White.WindowsAPI;
-using TestStack.White.InputDevices;
-using TestStack.White.UIItems.TableItems;
-using System.Windows.Automation;
-using System.ComponentModel;
+using System.Windows.Forms;
 using TestStack.White.Configuration;
-using TestStack.White.UIItems.ListBoxItems;
-using TestStack.White.UIItems.WPFUIItems;
-using TestStack.White.UIItems.MenuItems;
-using System.Diagnostics;
-using Castle.Core.Logging;
+using TestStack.White.InputDevices;
+using TestStack.White.UIItems.Finders;
+using TestStack.White.UIItems.WindowItems;
+using TestStack.White.WindowsAPI;
 
 namespace PerformanceProj {
     class Program {
+        public static void CreateMultOrders() {
+            //github.com/TestStack/White/blob/master/LICENSE-MIT.txt
 
-        static void Main(string[] args) {
-            CoreAppXmlConfiguration.Instance.LoggerFactory = new WhiteDefaultLoggerFactory(LoggerLevel.Off);
-            CoreAppXmlConfiguration.Instance.BusyTimeout = 20000;
             string portalName = "TilePortal: SimCorp Dimension 6.3 PUBLIC";
+            //string portalName = "TilePortal: SimCorp Dimension 6.3 (CONFIG_IMM)";
             string scdPath = @"\\Dk01snt899\public\PUBLIC63\Bin\";
+            //string scdPath = @"\\Dk01sv7033\t7020230\READYFORTEST\63\CONFIG_IMM\Bin\";
+            string titleLogon = "Logon - SimCorp Dimension Version 6.3 (PUBLIC)";
+            //string titleLogon = "Logon - SimCorp Dimension [Release Candidate] 6.3 (CONFIG_IMM)";
+
+            //Console.WriteLine("Portal:");
+            //string portalName = Console.ReadLine();
+            //Console.WriteLine("SCD path:");
+            //string scdPath = Console.ReadLine();
+            //Console.WriteLine("Logon window:");
+            //string titleLogon = Console.ReadLine();
 
             //Start App
             Console.WriteLine("Starting application...");
@@ -37,51 +35,47 @@ namespace PerformanceProj {
             scd.StartOrAttach();
 
             //Logon if needed
-            string titleLogon = "Logon - SimCorp Dimension Version 6.3 (PUBLIC)";
+
             scd.TryLogon(titleLogon, "MSBZ", "MSBZ");
 
             //Portal search
             Console.WriteLine("Openning the window...");
             WindowSCD.WaitWindow(portalName);
-            Window portal = WindowSCD.GetWindow(portalName);
+            Window portal = WindowSCD.GetWindow(portalName);       
+            TestStack.White.UIItems.TextBox textBoxSearch = portal.Get<TestStack.White.UIItems.TextBox>(SearchCriteria.ByText("SearchTextBox"));
             portal.Focus(DisplayState.Restored);
-            TextBox textBoxSearch = portal.Get<TextBox>(SearchCriteria.ByText("SearchTextBox"));
             string windowName = "Multiple Portfolio Orders";
-            textBoxSearch.Text = windowName;        
+            textBoxSearch.Text = windowName;
             Keyboard.Instance.PressSpecialKey(KeyboardInput.SpecialKeys.RETURN);
 
-            //MPO
+            //Open window
             WindowSCD.WaitWindow(windowName);
             Window window = WindowSCD.GetWindow(windowName);
-            //WindowSCD.ActiveCellInGrid(window);
+
             //set value
-            //WindowSCD.PutColumnFirstInGrid(window, "Security ID");
-            string[] gridColumns = { "Security ID", "Currency" };
-            WindowSCD.PrepareGridFields(window, gridColumns);
-            // TextBox textBoxSecID = WindowSCD.PrepareGridFields(window, "Security ID");
-            //   textBoxSecID.Text = "H BLAIR";
-            //Prepare Grid FieldsThread.Sleep(1000);
-            //Keyboard.Instance.PressSpecialKey(KeyboardInput.SpecialKeys.RETURN);
+            List<string> gridColumns = new List<string> { "Security ID", "Leg No.", "Custody", "Portfolio*", "Payment date" };
+            WindowSCD.PrepareMultipleGridFields(window, gridColumns);
+            Thread.Sleep(500);
+            string filePath = @"U:\Desktop\PerformanceProj\orders.txt";
+            try {
+                string orders = File.ReadAllText(filePath);
+                //Clipboard.SetText("J ACCR INT\t1\tHEG_TEST2\tGEN\t01.10.2018");
+                Clipboard.SetText(orders);
+                WindowSCD.PasteClipboardToGrid(windowName);
+                Thread.Sleep(500);
+                WindowSCD.Save();
+            } catch (Exception) {
+                Console.WriteLine("File not found");
+            }
+        }
 
-            /*
-             *             GroupBox assManItem = portal.Get<GroupBox>(SearchCriteria.ByControlType(ControlType.Group).AndByText("Tiles"));
-            var solutions = assManItem.Get(SearchCriteria.ByText("Asset Manager"));
-            solutions.Click();
-            //solutions.Click();
-            
-            WindowSCD.WaitWindow("Asset Manager");
-            Window assMan = WindowSCD.GetWindow("Asset Manager");
-            WindowSCD.ClickButton(assMan, SearchCriteria.ByText("Open"));
-            ListView listFields = assMan.ModalWindow(SearchCriteria.ByText("Search List - Asset Manager")).Get<ListView>(SearchCriteria.ByControlType(ControlType.Table));
-            listFields.Select(5);
-
-            //Load window and set up value
-        
-            TextBox textBoxSecID = WindowSCD.ActivateCell(mltplPortOrders, "Security ID");
-            textBoxSecID.Text = "H BLAIR";
-            Thread.Sleep(1000);
-            Keyboard.Instance.PressSpecialKey(KeyboardInput.SpecialKeys.RETURN);
-            */
+        [STAThread]
+        static void Main(string[] args) {
+            CoreAppXmlConfiguration.Instance.LoggerFactory = new WhiteDefaultLoggerFactory(LoggerLevel.Off);
+            CoreAppXmlConfiguration.Instance.BusyTimeout = 20000;                  
+            CreateMultOrders();
+            Console.WriteLine("Script ended.");
+            Console.ReadKey();
         }
     }
 }
