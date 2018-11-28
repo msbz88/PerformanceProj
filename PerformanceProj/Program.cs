@@ -15,12 +15,12 @@ namespace PerformanceProj {
         public static void CreateMultOrders() {
             //github.com/TestStack/White/blob/master/LICENSE-MIT.txt
 
-            string portalName = "TilePortal: SimCorp Dimension 6.3 PUBLIC";
-            //string portalName = "TilePortal: SimCorp Dimension 6.3 (CONFIG_IMM)";
-            string scdPath = @"\\Dk01snt899\public\PUBLIC63\Bin\";
-            //string scdPath = @"\\Dk01sv7033\t7020230\READYFORTEST\63\CONFIG_IMM\Bin\";
-            string titleLogon = "Logon - SimCorp Dimension Version 6.3 (PUBLIC)";
-            //string titleLogon = "Logon - SimCorp Dimension [Release Candidate] 6.3 (CONFIG_IMM)";
+            //string portalName = "TilePortal: SimCorp Dimension 6.3 PUBLIC";
+            string portalName = "TilePortal: SimCorp Dimension 6.3 CONFIG_IMM";
+            //string scdPath = @"\\Dk01snt899\public\PUBLIC63\Bin\";
+            string scdPath = @"\\Dk01sv7033\t7020230\READYFORTEST\63\CONFIG_IMM\Bin\";
+            //string titleLogon = "Logon - SimCorp Dimension Version 6.3 (PUBLIC)";
+            string titleLogon = "Logon - SimCorp Dimension [Release Candidate] 6.3 (CONFIG_IMM)";
 
             //Console.WriteLine("Portal:");
             //string portalName = Console.ReadLine();
@@ -53,7 +53,30 @@ namespace PerformanceProj {
             Window window = WindowSCD.GetWindow(windowName);
 
             //set value
-            List<string> gridColumns = new List<string> { "Security ID", "Leg No.", "Custody", "Portfolio*", "Payment date" };
+            List<string> gridColumns = new List<string>{
+                "Security ID",
+                "Portfolio group*",
+                "Transaction code",
+                "Nominal/Lots",
+                "Order type",
+                "Force time",
+                "Order class*",
+                "Broker",
+                "Dealer",
+                "Exchange",
+                "Counterparty",
+                "Custodian",
+                "Custody",
+                "Bank",
+                "Bank account",
+                "Requested status*",
+                "Order flag",
+                "Model portfolio",
+                "Purpose",
+                "Leg No.",
+                "Portfolio*",
+                "Currency",
+            };
             WindowSCD.PrepareMultipleGridFields(window, gridColumns);
             Thread.Sleep(500);
             string filePath = @"U:\Desktop\PerformanceProj\orders.txt";
